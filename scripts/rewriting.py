@@ -77,11 +77,12 @@ def rewriter(
 
 def plot_edges(edges: List[Tuple[Tuple[float, float], Tuple[float, float]]]) -> None:
     start_time = time.time()
+    coords = np.array(edges)
+    coords = np.vstack([coords[:,0,:], coords[-1,1,:]])
     _, ax = plt.subplots()
     ax.set_aspect("equal")
     ax.axis("off")
-    for (x0, y0), (x1, y1) in edges:
-        ax.plot([x0, x1], [y0, y1], color="k", linewidth=1.0)
+    ax.plot(coords[:,0], coords[:,1], color="k", linewidth=1.0)
     print(f"Plotting {len(edges)} edges: {(time.time() - start_time) * 1000:.1f}ms")
     plt.show()
 
@@ -93,7 +94,7 @@ def main(sides: int, length: float, depth: int, shape_offset: float) -> None:
     # Plot initial edges
     plot_edges(edges)
 
-    # Rewrite edges
+    # Define candidate
     candidate = np.array(
         [
             [0.0, 0.0],
@@ -104,6 +105,11 @@ def main(sides: int, length: float, depth: int, shape_offset: float) -> None:
         ]
     )
 
+    # Normalise candidate
+    candidate -= candidate[0,:]
+    candidate /= candidate[-1,0]
+
+    # Rewrite edges
     for i in range(depth):
         start_time = time.time()
         edges = rewriter(edges, candidate)
