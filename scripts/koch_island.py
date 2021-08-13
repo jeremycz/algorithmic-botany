@@ -10,6 +10,8 @@ Examples
 --n 4 --w F-F-F-F --F FF-F--F-F
 --n 5 --w F-F-F-F --F F-FF--F-F
 --n 4 --w F-F-F-F --F F-F+F-F-F
+--n 10 --w F --F F+f+ --f " -F-f" --p
+--n 6 --w f --F f+F+f --f F-f-F --a 60 --p
 """
 
 import argparse
@@ -21,10 +23,11 @@ import numpy as np
 
 
 class Generator:
-    def __init__(self, d: float, alpha: float):
+    def __init__(self, d: float, alpha: float, plot_all: bool):
         self.x = [0.0, 0.0]
         self.y = [0.0, 0.0]
         self.angle = 90.0 * math.pi / 180.0
+        self.plot_all = plot_all
 
         self.d = d
         self.angle_increment = alpha * math.pi / 180.0
@@ -38,7 +41,7 @@ class Generator:
             self.x[1] = self.x[0] + self.d * math.cos(self.angle)
             self.y[1] = self.y[0] + self.d * math.sin(self.angle)
 
-            if command == "F":
+            if command == "F" or self.plot_all:
                 self.ax.plot(self.x, self.y, color="k", linewidth=1.0)
 
         elif command == "-":
@@ -51,7 +54,13 @@ class Generator:
 
 
 def main(
-    w: str, F: str, f: str, n: int, step_length: float, angle_increment: float
+    w: str,
+    F: str,
+    f: str,
+    n: int,
+    step_length: float,
+    angle_increment: float,
+    plot_all: bool,
 ) -> None:
     w = w.strip()
     F = F.strip()
@@ -66,9 +75,8 @@ def main(
             w = w.replace("f", f)
             w = w.replace("x", F)
 
-    generator = Generator(step_length, angle_increment)
+    generator = Generator(step_length, angle_increment, plot_all)
 
-    print(w[:10])
     for command in tqdm(w):
         generator.run_command(command)
 
@@ -86,6 +94,7 @@ if __name__ == "__main__":
     parser.add_argument("--n", type=int, default=3)
     parser.add_argument("--d", type=float, default=1.0)
     parser.add_argument("--a", type=float, default=90.0)
+    parser.add_argument("--p", action="store_true", default=False)
     args = parser.parse_args()
 
-    main(args.w, args.F, args.f, args.n, args.d, args.a)
+    main(args.w, args.F, args.f, args.n, args.d, args.a, args.p)
